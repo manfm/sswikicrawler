@@ -1,0 +1,8 @@
+*.buildpath
+*.project
+*.prefs
+*.xml
+cache/*
+vendor/*
+composer.bat
+composer.lock
