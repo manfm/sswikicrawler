@@ -1,26 +1,21 @@
 <?php 
-require 'vendor/autoload.php';
-
-require 'crawler.php';
-
+require_once 'vendor/autoload.php';
 $configs = include('config.php');
+
+require_once 'WikiCrawler.php';
+require_once 'MustacheView.php';
 
 
 //$_GET['searchvalue'] = 'Rest';
 $searchvalue = $_GET['searchvalue'];
 
-$cache = new SimpleCache();
-$data = $cache->get_data($searchvalue, $configs['host'].$searchvalue);
-//echo strip_tags($data);
-//var_dump($data);
-
-$c = new Crawler();
-$info = $c->getInfo($data);
+$c = new WikiCrawler();
+$info = $c->getCardInfo(PageLoader::loadUrl($configs['host'].$searchvalue));
 
 $response = array();
 $response['query'] = $searchvalue;
-$response['text'] = $info;
-//$response['text'] = mb_convert_encoding($info, 'HTML-ENTITIES', "UTF-8");
+//$response['text'] = $info;
+$response['text'] = mb_convert_encoding($info, 'HTML-ENTITIES', "UTF-8");
 
 $info = $c->getClearWords($info); 
 $response['words_orig'] = count(explode(" ",$info));
@@ -28,7 +23,5 @@ $response['words'] = count(array_unique(explode(" ",$info)));
 
 //var_dump($response);
 
-$m = new Mustache_Engine(array(
-    'loader' => new Mustache_Loader_FilesystemLoader(dirname(__FILE__) . '/views'),
-));
+$m = new MustacheView();
 echo $m->render('template', $response);
