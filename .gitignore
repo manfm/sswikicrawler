@@ -2,8 +2,7 @@
 *.project
 *.prefs
 *.xml
-*.gitignore
-cache/*
+*.cache
 vendor/*
 composer.bat
 composer.lock
