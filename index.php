@@ -1,27 +1,42 @@
 <?php 
+use \sswikicrawler;
+
+//composer autoload
 require_once 'vendor/autoload.php';
-$configs = include('config.php');
-
-require_once 'WikiCrawler.php';
-require_once 'MustacheView.php';
-
 
 //$_GET['searchvalue'] = 'Rest';
+//prepare URL
 $searchvalue = $_GET['searchvalue'];
+$url = \sswikicrawler\Config::getValue('host').urlencode($searchvalue);
 
-$c = new WikiCrawler();
-$info = $c->getCardInfo(PageLoader::loadUrl($configs['host'].$searchvalue));
+//load page
+$c = new \sswikicrawler\WikiCrawler(\sswikicrawler\PageLoader::loadUrl($url));
 
 $response = array();
 $response['query'] = $searchvalue;
-//$response['text'] = $info;
-$response['text'] = mb_convert_encoding($info, 'HTML-ENTITIES', "UTF-8");
 
-$info = $c->getClearWords($info); 
-$response['words_orig'] = count(explode(" ",$info));
-$response['words'] = count(array_unique(explode(" ",$info)));
+//get summary card
+$info = $c->getCardInfo();
 
-//var_dump($response);
+//get first paragraph
+if(!$info)
+	$info = $c->getText();
 
-$m = new MustacheView();
-echo $m->render('template', $response);
+//if page is crawlable
+if($info){
+	$response['text'] = $info;
+	
+	//count unique words in text
+	$cleaninfo = $c->getClearText($info); 
+	$response['words'] = count($c->getUniqueWords($cleaninfo));
+} else {
+	//error
+	$response['text'] = "Query not found (".$url.")";
+	$response['words'] = 0;
+}
+
+//call template, pass data
+try{
+	$m = new \sswikicrawler\MustacheView();
+	echo $m->render('template', $response);
+}catch(Exception $e){\sswikicrawler\Log::exception($e);}
