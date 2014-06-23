@@ -2,6 +2,7 @@
 *.project
 *.prefs
 *.xml
+*.gitignore
 cache/*
 vendor/*
 composer.bat
